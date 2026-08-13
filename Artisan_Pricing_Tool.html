@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手作品定價幫手</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fdf5f0; /* 淺暖色系背景 */
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen">
+
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+        <!-- 頂部標題 -->
+        <header class="bg-gradient-to-r from-[#2b2d6e] to-[#8b268a] text-white p-6 text-center shadow-md relative z-10">
+            <h1 class="text-3xl font-bold tracking-wider">手作品定價幫手</h1>
+            <p class="text-indigo-100 mt-2 text-sm font-medium">精準計算成本，設定合理售價</p>
+        </header>
+
+        <div class="p-6 md:p-8 flex-grow flex flex-col md:flex-row gap-8">
+            
+            <!-- 左側：輸入區 -->
+            <div class="flex-1 space-y-8">
+                
+                <section class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-4 text-[#2b2d6e] border-b pb-2 border-indigo-100">
+                        <i class="fa-solid fa-tag mr-2"></i>基本資訊
+                    </h2>
+                    <div class="mb-4">
+                        <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">飾品名稱</label>
+                        <input type="text" id="productName" placeholder="例如：月光石純銀手鍊" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] focus:border-[#2b2d6e] transition-colors">
+                    </div>
+                </section>
+
+                <section class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-4 text-[#2b2d6e] border-b pb-2 border-indigo-100 flex justify-between items-center">
+                        <span><i class="fa-solid fa-beads mr-2"></i>產品材料費</span>
+                        <span class="text-sm font-normal text-gray-500">小計: NT$<span id="materialTotal" class="font-bold text-[#8b268a]">0</span></span>
+                    </h2>
+                    
+                    <div id="materialList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
+                        <!-- 材料項目將透過 JS 動態產生在這裡 -->
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="newMaterialName" placeholder="材料名稱" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
+                        <input type="number" id="newMaterialCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
+                        <button onclick="addMaterial('material')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> 新增
+                        </button>
+                    </div>
+                </section>
+
+                <section class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-4 text-[#2b2d6e] border-b pb-2 border-indigo-100 flex justify-between items-center">
+                        <span><i class="fa-solid fa-box-open mr-2"></i>包裝材料費</span>
+                        <span class="text-sm font-normal text-gray-500">小計: NT$<span id="packagingTotal" class="font-bold text-[#8b268a]">0</span></span>
+                    </h2>
+                    
+                    <div id="packagingList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
+                        <!-- 包裝項目將透過 JS 動態產生在這裡 -->
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="text" id="newPackagingName" placeholder="包裝名稱 (如: 絨布袋)" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
+                        <input type="number" id="newPackagingCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
+                        <button onclick="addMaterial('packaging')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> 新增
+                        </button>
+                    </div>
+                </section>
+
+                <section class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                    <h2 class="text-xl font-semibold mb-4 text-[#2b2d6e] border-b pb-2 border-indigo-100 flex justify-between items-center">
+                        <span><i class="fa-solid fa-clock mr-2"></i>人工與其他成本</span>
+                        <span class="text-sm font-normal text-gray-500">小計: NT$<span id="laborTotal" class="font-bold text-[#8b268a]">0</span></span>
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="hourlyRate" class="block text-sm font-medium text-gray-700 mb-1">時薪 ($/小時)</label>
+                            <input type="number" id="hourlyRate" value="183" min="0" step="1" oninput="calculateLaborCost()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                            <p class="text-xs text-gray-500 mt-1">預設為基本時薪</p>
+                        </div>
+                        <div>
+                            <label for="productionTime" class="block text-sm font-medium text-gray-700 mb-1">製作工時 (小時)</label>
+                            <input type="number" id="productionTime" value="1" min="0" step="0.1" oninput="calculateLaborCost()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <label for="platformType" class="block text-sm font-medium text-[#2b2d6e] mb-2"><i class="fa-solid fa-shop mr-1"></i>銷售平台手續費</label>
+                        <select id="platformType" onchange="togglePlatformFeeInput(); updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] mb-2 font-medium">
+                            <option value="custom_percent">自訂比例 (%)</option>
+                            <option value="pinkoi">Pinkoi (15% + 15元) × 1.05營業稅</option>
+                            <option value="myship">7-11 賣貨便 (固定 10 元)</option>
+                            <option value="famistore">全家 好賣+ (固定 10 元)</option>
+                            <option value="custom_fixed">自訂固定金額 ($)</option>
+                        </select>
+
+                        <!-- 自訂比例 -->
+                        <div id="customPercentDiv" style="display: flex;" class="items-center mt-1">
+                            <input type="number" id="platformFeePercent" value="5" min="0" max="100" step="0.1" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                            <span class="ml-2 text-gray-600 font-medium">%</span>
+                        </div>
+                        
+                        <!-- 自訂固定金額 -->
+                        <div id="customFixedDiv" style="display: none;" class="items-center mt-1">
+                            <span class="mr-2 text-gray-600 font-medium">NT$</span>
+                            <input type="number" id="platformFeeFixed" value="10" min="0" step="1" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                        </div>
+
+                        <!-- 平台公式提示 -->
+                        <p id="platformNote" style="display: none;" class="text-xs text-[#8b268a] font-medium mt-2 fade-in"></p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 右側：結果摘要區 -->
+            <div class="md:w-1/3 flex flex-col">
+                <div class="bg-gradient-to-r from-[#2b2d6e] to-[#8b268a] rounded-2xl p-6 text-white shadow-lg sticky top-8 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold mb-4 text-center pb-3 border-b border-white/25">定價分析報告</h2>
+                        
+                        <div class="space-y-3 mb-5 text-indigo-100 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span>產品材料總計</span>
+                                <span class="font-medium text-white">NT$ <span id="summaryMaterial">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>包裝材料總計</span>
+                                <span class="font-medium text-white">NT$ <span id="summaryPackaging">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>人工成本</span>
+                                <span class="font-medium text-white">NT$ <span id="summaryLabor">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span>平台抽成預估</span>
+                                <span>-NT$ <span id="summaryPlatformFee">0</span></span>
+                            </div>
+                            <!-- 隱藏的總成本欄位確保程式碼相容 -->
+                            <span id="summaryTotalCost" class="hidden">0</span>
+                        </div>
+
+                        <!-- 期望利潤率設定 -->
+                        <div class="mb-4">
+                            <label for="profitMargin" class="block text-sm font-medium mb-2 text-indigo-100">期望利潤率 (%)</label>
+                            <div class="flex items-center">
+                                <input type="range" id="profitMarginSlider" min="10" max="300" value="100" class="w-full mr-3 accent-white" oninput="document.getElementById('profitMargin').value = this.value; updateSummary()">
+                                <input type="number" id="profitMargin" value="100" min="0" oninput="document.getElementById('profitMarginSlider').value = this.value; updateSummary()" class="w-16 px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-center focus:outline-none focus:ring-2 focus:ring-white">
+                            </div>
+                        </div>
+
+                        <!-- 建議售價區塊 -->
+                        <div class="mt-4 pt-4 border-t border-white/20">
+                            <div class="flex items-center text-indigo-100 text-[15px] mb-1 font-medium tracking-wide">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                </svg>
+                                建議售價
+                            </div>
+                            <div class="text-[48px] leading-tight font-bold text-white tracking-tight mb-2 drop-shadow-sm flex items-baseline gap-2">
+                                NT$ <span id="suggestedPrice">0</span>
+                            </div>
+                            <div class="flex items-center text-indigo-100 text-[15px] font-medium tracking-wide">
+                                <i class="fa-solid fa-arrow-trend-up mr-2"></i>
+                                實際毛利 NT$ <span id="estimatedProfit">0</span> <span class="mx-2 opacity-50">/</span> <span id="actualMargin" class="font-bold text-white">0</span>%
+                            </div>
+                        </div>
+
+                        <!-- 折扣活動計算 -->
+                        <div class="mt-4 pt-4 border-t border-white/20 fade-in">
+                            <div class="flex justify-between items-center mb-2.5">
+                                <h3 class="text-sm font-bold text-white flex items-center">
+                                    <i class="fa-solid fa-tags mr-2"></i> 折扣活動計算
+                                </h3>
+                            </div>
+                            
+                            <!-- 輸入欄位 -->
+                            <div class="flex gap-2 mb-3">
+                                <select id="discountType" onchange="updateSummary()" class="w-0 flex-1 bg-white/10 border border-white/20 text-white text-xs rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 [&>option]:text-gray-800 truncate">
+                                    <option value="none">無折扣活動</option>
+                                    <option value="percent">打折 (如 85 折請輸入 85)</option>
+                                    <option value="amount">折抵固定金額 (-NT$)</option>
+                                </select>
+                                <input type="number" id="discountValue" value="85" min="0" oninput="updateSummary()" style="display:none;" class="w-20 bg-white/10 border border-white/20 text-white text-sm rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 placeholder-white/50" placeholder="數值">
+                            </div>
+
+                            <!-- 模擬結果 -->
+                            <div id="discountResult" style="display:none;" class="bg-black/20 rounded-xl p-3.5 text-sm shadow-inner border border-white/5 fade-in">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="text-indigo-100 text-xs">折後活動售價</span>
+                                    <span class="font-bold text-white text-base">NT$ <span id="simPrice">0</span></span>
+                                </div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="text-indigo-100 text-xs">折後平台抽成</span>
+                                    <span class="text-pink-200 text-xs">-NT$ <span id="simPlatformFee">0</span></span>
+                                </div>
+                                <div class="flex justify-between items-center pt-1.5 border-t border-white/10 mt-1">
+                                    <span class="text-indigo-100 text-xs">折後實際淨利</span>
+                                    <span class="font-bold text-emerald-400 text-base">NT$ <span id="simProfit">0</span></span>
+                                </div>
+                                <div class="text-right text-[11px] text-indigo-200 mt-1">
+                                    折後毛利率: <span id="simMargin" class="font-bold text-white">0</span>%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 結構視覺化 (圓餅圓環圖) -->
+                        <div class="mt-5 bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div class="flex justify-between items-center mb-3 text-xs font-medium text-indigo-100">
+                                <span><i class="fa-solid fa-chart-pie mr-1.5"></i>成本結構</span>
+                                <span id="visualTotalBadge" class="text-white font-bold">100%</span>
+                            </div>
+                            
+                            <!-- 圓餅圖與圖例區塊 -->
+                            <div class="flex items-center justify-around gap-4">
+                                <!-- CSS 圓餅圖/環形圖 -->
+                                <div class="relative w-24 h-24 flex-shrink-0">
+                                    <div id="donutChart" class="w-full h-full rounded-full transition-all duration-500 shadow-inner" style="background: conic-gradient(#ec4899 0% 0%, #f59e0b 0% 0%, #06b6d4 0% 0%, #c084fc 0% 0%, #34d399 0% 0%);"></div>
+                                    <!-- 中央內圓挖空 (環形圖效果) -->
+                                    <div class="absolute inset-2 bg-[#2b2d6e] rounded-full flex flex-col items-center justify-center text-white shadow-inner">
+                                        <span class="text-[10px] text-indigo-200">成本比例</span>
+                                        <span class="text-xs font-bold" id="donutCenterText">100%</span>
+                                    </div>
+                                </div>
+
+                                <!-- 圖例說明 -->
+                                <div class="flex flex-col gap-1.5 text-[11px] text-indigo-100 flex-grow">
+                                    <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-pink-400 inline-block"></span>材料</span> <span id="pctMaterial" class="font-bold">0%</span></div>
+                                    <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>包裝</span> <span id="pctPackaging" class="font-bold">0%</span></div>
+                                    <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>人工</span> <span id="pctLabor" class="font-bold">0%</span></div>
+                                    <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 inline-block"></span>平台</span> <span id="pctPlatform" class="font-bold">0%</span></div>
+                                    <div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>淨利</span> <span id="pctProfit" class="font-bold">0%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 space-y-3 print:hidden">
+                        <button onclick="saveToGoogleSheet()" id="btnSaveSheet" class="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md flex items-center justify-center">
+                            <i class="fa-brands fa-google mr-2"></i> 儲存至 Google Sheets
+                        </button>
+                        <button onclick="window.print()" class="w-full bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold py-3 px-4 rounded-xl transition-colors shadow-md flex items-center justify-center">
+                            <i class="fa-solid fa-print mr-2"></i> 列印 / 儲存 PDF
+                        </button>
+                        <div class="text-center pt-1">
+                            <button onclick="toggleSheetSettings()" class="text-xs text-indigo-200 hover:text-white underline transition-colors">
+                                <i class="fa-solid fa-gear mr-1"></i> Google Sheets 連線設定教學
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Google Sheets 設定 Modal -->
+    <div id="sheetSettingsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 text-gray-800 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-4 text-[#2b2d6e]"><i class="fa-brands fa-google mr-2"></i>Google Sheets 連線設定</h2>
+            
+            <div class="mb-5">
+                <label for="scriptUrl" class="block text-sm font-medium text-gray-700 mb-1">Google Apps Script 網頁應用程式網址 (URL)</label>
+                <input type="text" id="scriptUrl" placeholder="請貼上 https://script.google.com/macros/s/.../exec" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] focus:border-[#2b2d6e]">
+                <p class="text-xs text-gray-500 mt-1">此網址將安全地暫存於您的瀏覽器中，不會外洩。</p>
+            </div>
+
+            <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-100 text-sm space-y-3 mb-6">
+                <h3 class="font-bold text-[#2b2d6e] text-base">🛠️ 5 分鐘快速設定教學</h3>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li>建立一個新的 Google 試算表。</li>
+                    <li>在試算表 A1~E1 欄位分別輸入標題：<code>日期時間</code>、<code>飾品名稱</code>、<code>總成本</code>、<code>建議售價</code>、<code>預估淨利</code>。</li>
+                    <li>點擊上方選單的 <strong>「擴充功能」 > 「Apps Script」</strong>。</li>
+                    <li>清除裡面原有的程式碼，將以下程式碼<strong>複製並貼上</strong>：</li>
+                </ol>
+                
+                <div class="relative mt-2">
+                    <textarea readonly class="w-full h-40 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var rowData = [
+    new Date(),
+    e.parameter.productName || '未命名飾品',
+    e.parameter.totalCost,
+    e.parameter.suggestedPrice,
+    e.parameter.netProfit
+  ];
+  sheet.appendRow(rowData);
+  return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+}</textarea>
+                    <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
+                </div>
+                
+                <ol class="list-decimal list-inside space-y-2 text-gray-700 mt-2" start="5">
+                    <li>點擊上方的 <strong>「儲存」</strong> 圖示（磁碟片）。</li>
+                    <li>點擊右上角藍色按鈕 <strong>「部署」 > 「新增部署作業」</strong>。</li>
+                    <li>點擊左上角齒輪 ⚙️ 選擇 <strong>「網頁應用程式 (Web App)」</strong>。</li>
+                    <li>【重要】在「誰可以存取」的下拉選單中，<strong>務必選擇「所有人 (Anyone)」</strong>。</li>
+                    <li>點擊「部署」，授權存取後，<strong>複製「網頁應用程式網址」</strong>並貼到本頁面最上方的輸入框中，點擊儲存即可！</li>
+                </ol>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="toggleSheetSettings()" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-medium">關閉</button>
+                <button onclick="saveSheetSettings()" class="px-5 py-2 rounded-lg bg-[#2b2d6e] hover:bg-[#1e1f4d] text-white transition-colors font-medium shadow-md">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 資料狀態
+        const state = {
+            materials: [
+                { id: generateId(), name: '天然淡水珍珠', cost: 150 },
+                { id: generateId(), name: '925純銀耳針', cost: 30 }
+            ],
+            packaging: [
+                { id: generateId(), name: '品牌紙盒', cost: 25 },
+                { id: generateId(), name: '氣泡紙/防撞墊', cost: 5 }
+            ],
+            labor: 0,
+            editingId: null
+        };
+
+        // 產生唯一ID的輔助函數
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        // 初始化應用程式
+        function init() {
+            renderList('material');
+            renderList('packaging');
+            calculateLaborCost();
+        }
+
+        // 渲染列表 (材料或包裝)
+        function renderList(type) {
+            const listId = type === 'material' ? 'materialList' : 'packagingList';
+            const data = state[type === 'material' ? 'materials' : 'packaging'];
+            const container = document.getElementById(listId);
+            
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-gray-400 text-sm text-center py-2 italic">目前無項目，請在下方新增。</p>`;
+                updateCategoryTotal(type);
+                return;
+            }
+
+            data.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200 shadow-sm fade-in hover:border-[#2b2d6e] transition-colors';
+                
+                if (state.editingId === item.id) {
+                    itemEl.innerHTML = `
+                        <div class="flex-grow flex gap-2 mr-2">
+                            <input type="text" id="editName_${item.id}" value="${item.name}" class="w-full px-2 py-1 rounded border border-[#2b2d6e] focus:ring-1 focus:ring-[#2b2d6e] text-sm font-medium">
+                            <input type="number" id="editCost_${item.id}" value="${item.cost}" min="0" step="1" class="w-20 px-2 py-1 rounded border border-[#2b2d6e] focus:ring-1 focus:ring-[#2b2d6e] text-sm font-medium">
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="saveEdit('${type}', '${item.id}')" class="text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 p-1.5 rounded transition-colors" title="儲存">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button onclick="cancelEdit('${type}')" class="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-1.5 rounded transition-colors" title="取消">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    itemEl.innerHTML = `
+                        <div class="flex-grow font-medium text-gray-700">${item.name}</div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-900 font-semibold mr-2">$${item.cost}</span>
+                            <button onclick="startEdit('${type}', '${item.id}')" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1.5" title="編輯">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="removeItem('${type}', '${item.id}')" class="text-red-400 hover:text-red-600 transition-colors p-1.5" title="刪除">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+                container.appendChild(itemEl);
+            });
+
+            updateCategoryTotal(type);
+        }
+
+        // 開始編輯
+        function startEdit(type, id) {
+            state.editingId = id;
+            renderList(type);
+        }
+
+        // 取消編輯
+        function cancelEdit(type) {
+            state.editingId = null;
+            renderList(type);
+        }
+
+        // 儲存編輯結果
+        function saveEdit(type, id) {
+            const nameInput = document.getElementById(`editName_${id}`);
+            const costInput = document.getElementById(`editCost_${id}`);
+            
+            const newName = nameInput.value.trim();
+            const newCost = parseFloat(costInput.value);
+
+            if (!newName) {
+                alert('請輸入名稱！');
+                nameInput.focus();
+                return;
+            }
+            if (isNaN(newCost) || newCost < 0) {
+                alert('請輸入有效的成本金額！');
+                costInput.focus();
+                return;
+            }
+
+            const targetArray = type === 'material' ? state.materials : state.packaging;
+            const itemIndex = targetArray.findIndex(item => item.id === id);
+            
+            if (itemIndex > -1) {
+                targetArray[itemIndex].name = newName;
+                targetArray[itemIndex].cost = newCost;
+            }
+
+            state.editingId = null;
+            renderList(type);
+        }
+
+        // 新增項目
+        function addMaterial(type) {
+            const nameInput = document.getElementById(`new${type === 'material' ? 'Material' : 'Packaging'}Name`);
+            const costInput = document.getElementById(`new${type === 'material' ? 'Material' : 'Packaging'}Cost`);
+            
+            const name = nameInput.value.trim();
+            const cost = parseFloat(costInput.value);
+
+            if (!name) {
+                alert('請輸入名稱！');
+                nameInput.focus();
+                return;
+            }
+            if (isNaN(cost) || cost < 0) {
+                alert('請輸入有效的成本金額！');
+                costInput.focus();
+                return;
+            }
+
+            const targetArray = type === 'material' ? state.materials : state.packaging;
+            
+            targetArray.push({
+                id: generateId(),
+                name: name,
+                cost: cost
+            });
+
+            nameInput.value = '';
+            costInput.value = '';
+            
+            renderList(type);
+        }
+
+        // 允許按 Enter 鍵新增
+        document.getElementById('newMaterialCost').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addMaterial('material');
+        });
+        document.getElementById('newPackagingCost').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addMaterial('packaging');
+        });
+
+        // 刪除項目
+        function removeItem(type, id) {
+            if(type === 'material') {
+                state.materials = state.materials.filter(item => item.id !== id);
+            } else {
+                state.packaging = state.packaging.filter(item => item.id !== id);
+            }
+            renderList(type);
+        }
+
+        // 更新單一類別的小計
+        function updateCategoryTotal(type) {
+            const data = state[type === 'material' ? 'materials' : 'packaging'];
+            const totalElement = document.getElementById(`${type}Total`);
+            
+            const total = data.reduce((sum, item) => sum + item.cost, 0);
+            totalElement.textContent = Math.round(total);
+            
+            updateSummary();
+        }
+
+        // 計算人工成本
+        function calculateLaborCost() {
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+            const productionTime = parseFloat(document.getElementById('productionTime').value) || 0;
+            
+            state.labor = Math.round(hourlyRate * productionTime);
+            document.getElementById('laborTotal').textContent = state.labor;
+            
+            updateSummary();
+        }
+
+        // 切換平台手續費輸入模式
+        function togglePlatformFeeInput() {
+            const type = document.getElementById('platformType').value;
+            const percentDiv = document.getElementById('customPercentDiv');
+            const fixedDiv = document.getElementById('customFixedDiv');
+            const note = document.getElementById('platformNote');
+
+            if (type === 'custom_percent') {
+                percentDiv.style.display = 'flex';
+                fixedDiv.style.display = 'none';
+            } else if (type === 'custom_fixed') {
+                percentDiv.style.display = 'none';
+                fixedDiv.style.display = 'flex';
+            } else {
+                percentDiv.style.display = 'none';
+                fixedDiv.style.display = 'none';
+            }
+
+            if (type === 'pinkoi') {
+                note.innerHTML = '<i class="fa-solid fa-calculator mr-1"></i> <strong>Pinkoi 公式</strong>：(售價 × 15% + 15元) × 1.05營業稅';
+                note.style.display = 'block';
+            } else if (type === 'myship' || type === 'famistore') {
+                note.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> 固定扣除 10 元/筆';
+                note.style.display = 'block';
+            } else {
+                note.style.display = 'none';
+            }
+        }
+
+        function updateSummary() {
+            const materialTotal = state.materials.reduce((sum, item) => sum + item.cost, 0);
+            const packagingTotal = state.packaging.reduce((sum, item) => sum + item.cost, 0);
+            const laborTotal = state.labor;
+            
+            const totalCost = materialTotal + packagingTotal + laborTotal;
+
+            document.getElementById('summaryMaterial').textContent = Math.round(materialTotal).toLocaleString();
+            document.getElementById('summaryPackaging').textContent = Math.round(packagingTotal).toLocaleString();
+            document.getElementById('summaryLabor').textContent = Math.round(laborTotal).toLocaleString();
+            document.getElementById('summaryTotalCost').textContent = Math.round(totalCost).toLocaleString();
+
+            const profitMarginPercentage = parseFloat(document.getElementById('profitMargin').value) || 0;
+            const basePrice = totalCost * (1 + (profitMarginPercentage / 100));
+            
+            const platformType = document.getElementById('platformType').value;
+            let suggestedPrice = 0;
+            let platformFee = 0;
+            let netProfit = 0;
+
+            if (platformType === 'pinkoi') {
+                suggestedPrice = Math.round((basePrice + 15.75) / 0.8425);
+                platformFee = Math.round((suggestedPrice * 0.15 + 15) * 1.05);
+            } else if (platformType === 'myship' || platformType === 'famistore') {
+                suggestedPrice = Math.round(basePrice + 10);
+                platformFee = 10;
+            } else if (platformType === 'custom_fixed') {
+                const fixedFee = parseFloat(document.getElementById('platformFeeFixed').value) || 0;
+                suggestedPrice = Math.round(basePrice + fixedFee);
+                platformFee = fixedFee;
+            } else {
+                const platformFeePercentage = parseFloat(document.getElementById('platformFeePercent').value) || 0;
+                if (platformFeePercentage >= 100) {
+                    suggestedPrice = 0;
+                } else {
+                    suggestedPrice = Math.round(basePrice / (1 - (platformFeePercentage / 100)));
+                    platformFee = Math.round(suggestedPrice * (platformFeePercentage / 100));
+                }
+            }
+
+            netProfit = suggestedPrice - platformFee - totalCost;
+
+            let actualMarginPercentage = 0;
+            if (suggestedPrice > 0) {
+                actualMarginPercentage = ((netProfit / suggestedPrice) * 100).toFixed(1);
+            }
+
+            document.getElementById('suggestedPrice').textContent = suggestedPrice.toLocaleString();
+            document.getElementById('summaryPlatformFee').textContent = platformFee.toLocaleString();
+            document.getElementById('actualMargin').textContent = actualMarginPercentage;
+            
+            const profitElement = document.getElementById('estimatedProfit');
+            profitElement.textContent = netProfit.toLocaleString();
+            
+            if (netProfit < 0) {
+                profitElement.className = "text-red-300 font-bold";
+            } else {
+                profitElement.className = "text-white font-bold";
+            }
+
+            // --- 結構視覺化計算 (以建議售價為 100%) ---
+            if (suggestedPrice > 0) {
+                const pMat = Math.max(0, (materialTotal / suggestedPrice) * 100);
+                const pPkg = Math.max(0, (packagingTotal / suggestedPrice) * 100);
+                const pLab = Math.max(0, (laborTotal / suggestedPrice) * 100);
+                const pPlat = Math.max(0, (platformFee / suggestedPrice) * 100);
+                const pProf = Math.max(0, (netProfit / suggestedPrice) * 100);
+
+                // 計算 CSS conic-gradient 區段累積百分比
+                const endMat = pMat;
+                const endPkg = endMat + pPkg;
+                const endLab = endPkg + pLab;
+                const endPlat = endLab + pPlat;
+                const endProf = 100;
+
+                const donutStyle = `conic-gradient(
+                    #ec4899 0% ${endMat}%, 
+                    #fbbf24 ${endMat}% ${endPkg}%, 
+                    #22d3ee ${endPkg}% ${endLab}%, 
+                    #c084fc ${endLab}% ${endPlat}%, 
+                    #34d399 ${endPlat}% ${endProf}%
+                )`;
+                document.getElementById('donutChart').style.background = donutStyle;
+
+                document.getElementById('pctMaterial').textContent = pMat.toFixed(0) + '%';
+                document.getElementById('pctPackaging').textContent = pPkg.toFixed(0) + '%';
+                document.getElementById('pctLabor').textContent = pLab.toFixed(0) + '%';
+                document.getElementById('pctPlatform').textContent = pPlat.toFixed(0) + '%';
+                document.getElementById('pctProfit').textContent = pProf.toFixed(0) + '%';
+            } else {
+                document.getElementById('donutChart').style.background = 'conic-gradient(#cbd5e1 0% 100%)';
+                ['pctMaterial', 'pctPackaging', 'pctLabor', 'pctPlatform', 'pctProfit'].forEach(id => {
+                    document.getElementById(id).textContent = '0%';
+                });
+            }
+
+            // --- 折扣活動計算 ---
+            const discountType = document.getElementById('discountType').value;
+            const discountValueInput = document.getElementById('discountValue');
+            const discountResult = document.getElementById('discountResult');
+
+            if (discountType === 'none') {
+                discountValueInput.style.display = 'none';
+                discountResult.style.display = 'none';
+            } else {
+                discountValueInput.style.display = 'block';
+                discountResult.style.display = 'block';
+                
+                let dValue = parseFloat(discountValueInput.value) || 0;
+                let simPrice = suggestedPrice;
+
+                if (discountType === 'percent') {
+                    simPrice = Math.round(suggestedPrice * (dValue / 100));
+                } else if (discountType === 'amount') {
+                    simPrice = Math.max(0, suggestedPrice - dValue);
+                }
+
+                let simPlatformFee = 0;
+                if (platformType === 'pinkoi') {
+                    simPlatformFee = Math.round((simPrice * 0.15 + 15) * 1.05);
+                } else if (platformType === 'myship' || platformType === 'famistore') {
+                    simPlatformFee = 10;
+                } else if (platformType === 'custom_fixed') {
+                    simPlatformFee = parseFloat(document.getElementById('platformFeeFixed').value) || 0;
+                } else {
+                    const platformFeePercentage = parseFloat(document.getElementById('platformFeePercent').value) || 0;
+                    simPlatformFee = Math.round(simPrice * (platformFeePercentage / 100));
+                }
+
+                let simProfit = simPrice - simPlatformFee - totalCost;
+                let simMargin = simPrice > 0 ? ((simProfit / simPrice) * 100).toFixed(1) : 0;
+
+                document.getElementById('simPrice').textContent = simPrice.toLocaleString();
+                document.getElementById('simPlatformFee').textContent = simPlatformFee.toLocaleString();
+                
+                const simProfitEl = document.getElementById('simProfit');
+                simProfitEl.textContent = simProfit.toLocaleString();
+                simProfitEl.className = simProfit < 0 ? "font-bold text-red-400 text-base" : "font-bold text-emerald-400 text-base";
+                
+                document.getElementById('simMargin').textContent = simMargin;
+            }
+        }
+
+        window.onload = function() {
+            init();
+            
+            const savedUrl = localStorage.getItem('googleSheetScriptUrl');
+            if (savedUrl) {
+                document.getElementById('scriptUrl').value = savedUrl;
+            }
+        };
+
+        function toggleSheetSettings() {
+            const modal = document.getElementById('sheetSettingsModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function saveSheetSettings() {
+            const url = document.getElementById('scriptUrl').value.trim();
+            localStorage.setItem('googleSheetScriptUrl', url);
+            toggleSheetSettings();
+            alert('Google Sheets 網址設定已儲存！');
+        }
+
+        function saveToGoogleSheet() {
+            const scriptUrl = document.getElementById('scriptUrl').value.trim();
+            
+            if (!scriptUrl || !scriptUrl.startsWith('https://script.google.com/')) {
+                alert('請先點擊下方的「Google Sheets 連線設定教學」輸入正確的 Apps Script 網址。');
+                toggleSheetSettings();
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveSheet');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> 寫入資料中...';
+            btn.disabled = true;
+
+            const productName = document.getElementById('productName').value || '未命名飾品';
+            const totalCost = (state.materials.reduce((s, i) => s + i.cost, 0) + state.packaging.reduce((s, i) => s + i.cost, 0) + state.labor);
+            const suggestedPrice = document.getElementById('suggestedPrice').textContent.replace(/,/g, '');
+            const netProfit = document.getElementById('estimatedProfit').textContent.replace(/,/g, '');
+
+            const formData = new FormData();
+            formData.append('productName', productName);
+            formData.append('totalCost', totalCost);
+            formData.append('suggestedPrice', suggestedPrice);
+            formData.append('netProfit', netProfit);
+
+            fetch(scriptUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            })
+            .then(() => {
+                alert('✅ 成功！資料已送出至您的 Google Sheets。');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            })
+            .catch(error => {
+                console.error('儲存至 Google Sheets 時發生錯誤:', error);
+                alert('❌ 儲存失敗。請檢查您的網路連線，或確認 Apps Script 權限是否設為「所有人」。');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
