@@ -919,7 +919,7 @@ function setup() {
 
             // 由於跨網域 iframe 無法準確捕捉 load 事件，設定 1.5 秒後預設完成並還原按鈕
             setTimeout(() => {
-                alert('✅ 請求已送出！請至 Google 試算表確認資料。\n\n(若仍未出現，請務必確認部署設定的「執行身分」為「您自己」，且「存取權」為「所有人」)');
+                alert('✅ 請求已送出！請至 Google 試算表確認資料。');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
                 // 清理 DOM
