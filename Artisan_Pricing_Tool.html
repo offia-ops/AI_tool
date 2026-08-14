@@ -35,24 +35,59 @@
             background: #94a3b8; 
         }
         
-        /* 列印專用樣式 */
+        /* 列印專用樣式 - 黑白省墨版 */
         @media print {
             @page {
                 size: A4 portrait; /* 固定為 A4 直式尺寸 */
                 margin: 0.8cm;     /* 縮小邊界，爭取更多內容空間 */
             }
             body {
-                -webkit-print-color-adjust: exact; /* 確保列印時保留漸層與背景色 */
-                print-color-adjust: exact;
-                background-color: white !important; /* 背景改白，節省墨水且版面更乾淨 */
+                filter: grayscale(100%); /* 全局強制轉換為黑白/灰階 */
+                background-color: white !important;
                 padding: 0 !important;
                 display: block !important; /* 取消 body 的 flex 置中，避免跑版 */
             }
+            
+            /* 移除所有深色背景與漸層，改為白底黑框以極致節省墨水 */
+            header, 
+            .bg-gradient-to-r, 
+            .bg-black\/20, 
+            .bg-gray-50, 
+            .bg-\[\#2b2d6e\],
+            .absolute.inset-2 {
+                background-color: white !important;
+                background-image: none !important; /* 移除漸層色 */
+                box-shadow: none !important;
+            }
+
+            /* 為原本靠背景色區分的區塊加上實體細邊框，增強紙本可讀性 */
+            .bg-gray-50, .md\:w-1\/3 > div, .bg-black\/20 {
+                border: 1px solid #999 !important;
+            }
+            
+            /* 頂部標題改用底線分隔 */
+            header {
+                border-bottom: 2px solid #000 !important;
+                padding: 1rem 0 !important;
+            }
+
+            /* 強制所有文字轉黑 */
+            * {
+                color: black !important;
+            }
+            
+            /* 分隔線轉為深灰 */
+            .border-white\/20, .border-white\/25, .border-white\/10, .border-white\/5, .border-indigo-100, .border-gray-200 {
+                border-color: #bbb !important;
+            }
+
             /* 滿版呈現，移除陰影 */
             .max-w-4xl {
                 max-width: 100% !important;
                 box-shadow: none !important;
+                border: none !important;
             }
+
             /* 強制列印時保持左右雙欄排版，不折行 */
             .flex-col.md\:flex-row {
                 flex-direction: row !important;
@@ -68,6 +103,7 @@
                 max-width: 38% !important;
                 width: 38% !important; 
             }
+
             /* 縮小區塊內距與間距，極致壓縮空間以符合一頁 */
             .p-6 { padding: 1rem !important; }
             .p-8 { padding: 1.5rem !important; }
@@ -77,25 +113,29 @@
                 break-inside: avoid; /* 避免單一區塊被切成兩半 */
                 page-break-inside: avoid;
             }
-            /* 讓輸入框在列印時隱藏邊框，看起來更像純文字報表 */
+
+            /* 讓輸入框變成底線，看起來更像傳統紙本表單 */
             input[type="text"], input[type="number"], select {
                 border: none !important;
+                border-bottom: 1px dashed #999 !important;
                 background: transparent !important;
                 box-shadow: none !important;
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
-                padding: 0 !important;
+                padding: 0 4px !important;
                 height: auto !important;
-                color: #1f2937 !important; /* 確保文字夠深 */
+                border-radius: 0 !important;
             }
+            
             /* 隱藏右側表單的範圍拉桿 (range) */
             input[type="range"] {
                 display: none !important;
             }
+            
             /* 縮小右側大字體，防止撐破版面 */
             .text-\[48px\] {
-                font-size: 36px !important;
+                font-size: 32px !important;
                 line-height: 1 !important;
             }
         }
