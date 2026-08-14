@@ -423,8 +423,9 @@ function doPost(e) {
     // 取得當天日期 (YYYY-MM-DD 格式，不含時間)
     var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     
+    // 將序號排在第一個欄位
     sheet.appendRow([
-      serialNum,
+      "No." + serialNum,
       today,
       e.parameter.productName || '未命名飾品',
       e.parameter.totalCost || 0,
@@ -446,7 +447,7 @@ function setup() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
   var serialNum = sheet.getLastRow();
   var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-  sheet.appendRow([serialNum, today, "系統測試", "已成功取得權限！", 0, 0]);
+  sheet.appendRow(["No." + serialNum, today, "系統測試", "已成功取得權限！", 0, 0]);
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
