@@ -412,43 +412,44 @@
                 </ol>
                 
                 <div class="relative mt-2">
-                    <textarea readonly class="w-full h-48 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
+                    <textarea readonly class="w-full h-64 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
 function doPost(e) {
-  // 1. 防呆機制：如果您在編輯器按「執行」，e 會是 undefined，直接終止不報錯
-  if (typeof e === 'undefined') {
-    return ContentService.createTextOutput("請不要在這裡點擊執行！請回到定價幫手網頁點擊按鈕。");
-  }
-  
-  // 2. 正常處理網頁送來的資料
+  if (typeof e === 'undefined' || !e.parameter) return ContentService.createTextOutput("請從網頁送出資料");
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var rowData = [
+    // 改用 getSheets()[0] 強制抓取第一頁，避免背景執行迷路
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    sheet.appendRow([
       new Date(),
       e.parameter.productName || '未命名飾品',
       e.parameter.totalCost || 0,
       e.parameter.suggestedPrice || 0,
       e.parameter.netProfit || 0
-    ];
-    sheet.appendRow(rowData);
-    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
-  } catch (error) {
-    return ContentService.createTextOutput("Error: " + error.toString()).setMimeType(ContentService.MimeType.TEXT);
+    ]);
+    return ContentService.createTextOutput("Success");
+  } catch (err) {
+    return ContentService.createTextOutput("Error: " + err.toString());
   }
 }
 
-// 加入 doGet，讓您也能用網址直接確認 API 存活狀態
 function doGet(e) {
   return ContentService.createTextOutput("API 運作中！請回到定價網頁送出資料。");
+}
+
+// ★ 首次授權專用：請在上方選單選擇此函數並點擊「執行」來觸發權限審查 ★
+function setup() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  sheet.appendRow(["系統測試", "已成功取得權限！", 0, 0, 0]);
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
                 
                 <ol class="list-decimal list-inside space-y-2 text-gray-700 mt-2" start="5">
-                    <li>點擊上方的 <strong>「儲存」</strong> 圖示（磁碟片）。</li>
-                    <li>點擊右上角藍色按鈕 <strong>「部署」 > 「新增部署作業」</strong>。</li>
-                    <li>點擊左上角齒輪 ⚙️ 選擇 <strong>「網頁應用程式 (Web App)」</strong>。</li>
-                    <li>【重要】在「誰可以存取」的下拉選單中，<strong>務必選擇「所有人 (Anyone)」</strong>。</li>
-                    <li>點擊「部署」，授權存取後，<strong>複製「網頁應用程式網址」</strong>並貼到本頁面最上方的輸入框中，點擊儲存即可！</li>
+                    <li><strong>【超重要】</strong>在上方工具列的下拉選單找到並選擇 <code>setup</code> 函數，點擊 <strong>「執行」</strong>。這時會跳出「需要授權」視窗，請點選您的帳號 -> 點「進階」 -> 點最下方「前往...」 -> 點「允許」。</li>
+                    <li>授權成功後，您的試算表應該會出現一行「系統測試」的資料！</li>
+                    <li>點擊右上角藍色按鈕 <strong>「部署」 > 「管理部署作業」</strong>。</li>
+                    <li>點擊右側的 <strong>鉛筆圖示 (編輯)</strong>。</li>
+                    <li>在「版本」的下拉選單中，<strong>務必選擇「建立新版本 (New version)」</strong>。</li>
+                    <li>點擊「部署」。(網址不會變，不用重新貼)</li>
                 </ol>
             </div>
 
