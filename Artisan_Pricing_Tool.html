@@ -307,15 +307,20 @@
                 </ol>
                 
                 <div class="relative mt-2">
-                    <textarea readonly class="w-full h-40 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
+                    <textarea readonly class="w-full h-48 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
 function doPost(e) {
+  // 防呆機制：避免在編輯器直接按執行報錯
+  if (typeof e === 'undefined') {
+    return ContentService.createTextOutput("請從網頁端點擊按鈕發送資料，不要在此直接執行唷！");
+  }
+
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var rowData = [
     new Date(),
     e.parameter.productName || '未命名飾品',
-    e.parameter.totalCost,
-    e.parameter.suggestedPrice,
-    e.parameter.netProfit
+    e.parameter.totalCost || 0,
+    e.parameter.suggestedPrice || 0,
+    e.parameter.netProfit || 0
   ];
   sheet.appendRow(rowData);
   return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
