@@ -753,16 +753,17 @@ function doPost(e) {
             const suggestedPrice = document.getElementById('suggestedPrice').textContent.replace(/,/g, '');
             const netProfit = document.getElementById('estimatedProfit').textContent.replace(/,/g, '');
 
-            const formData = new FormData();
-            formData.append('productName', productName);
-            formData.append('totalCost', totalCost);
-            formData.append('suggestedPrice', suggestedPrice);
-            formData.append('netProfit', netProfit);
+            // 將 FormData 更改為 URLSearchParams，確保 Google Apps Script 能正確讀取
+            const params = new URLSearchParams();
+            params.append('productName', productName);
+            params.append('totalCost', totalCost);
+            params.append('suggestedPrice', suggestedPrice);
+            params.append('netProfit', netProfit);
 
             fetch(scriptUrl, {
                 method: 'POST',
-                mode: 'no-cors',
-                body: formData
+                mode: 'no-cors', // 允許跨網域送出
+                body: params
             })
             .then(() => {
                 alert('✅ 成功！資料已送出至您的 Google Sheets。');
