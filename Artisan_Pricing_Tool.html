@@ -311,19 +311,28 @@
 function doPost(e) {
   // 防呆機制：避免在編輯器直接按執行報錯
   if (typeof e === 'undefined') {
-    return ContentService.createTextOutput("請從網頁端點擊按鈕發送資料，不要在此直接執行唷！");
+    return ContentService.createTextOutput("請從網頁端點擊按鈕發送資料！");
   }
+  
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rowData = [
+      new Date(),
+      e.parameter.productName || '未命名飾品',
+      e.parameter.totalCost || 0,
+      e.parameter.suggestedPrice || 0,
+      e.parameter.netProfit || 0
+    ];
+    sheet.appendRow(rowData);
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    return ContentService.createTextOutput("Error: " + error.toString()).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
 
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var rowData = [
-    new Date(),
-    e.parameter.productName || '未命名飾品',
-    e.parameter.totalCost || 0,
-    e.parameter.suggestedPrice || 0,
-    e.parameter.netProfit || 0
-  ];
-  sheet.appendRow(rowData);
-  return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+// 加入 doGet，讓您也能用網址直接測試
+function doGet(e) {
+  return doPost(e);
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
@@ -758,20 +767,20 @@ function doPost(e) {
             const suggestedPrice = document.getElementById('suggestedPrice').textContent.replace(/,/g, '');
             const netProfit = document.getElementById('estimatedProfit').textContent.replace(/,/g, '');
 
-            // 將 FormData 更改為 URLSearchParams，確保 Google Apps Script 能正確讀取
-            const params = new URLSearchParams();
-            params.append('productName', productName);
-            params.append('totalCost', totalCost);
-            params.append('suggestedPrice', suggestedPrice);
-            params.append('netProfit', netProfit);
+            // 改用 FormData 格式，對 Google Sheets 接收的相容性最高
+            const formData = new FormData();
+            formData.append('productName', productName);
+            formData.append('totalCost', totalCost);
+            formData.append('suggestedPrice', suggestedPrice);
+            formData.append('netProfit', netProfit);
 
             fetch(scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors', // 允許跨網域送出
-                body: params
+                body: formData
             })
             .then(() => {
-                alert('✅ 成功！資料已送出至您的 Google Sheets。');
+                alert('✅ 成功！資料已送出。\n(若未出現在表單，請檢查 Google Apps Script 內的「執行項目」紀錄是否有報錯)');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             })
