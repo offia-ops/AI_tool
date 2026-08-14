@@ -221,9 +221,10 @@
                         </div>
                     </div>
                     
-                    <div class="mt-4 pt-4 border-t border-gray-200">
-                        <label for="platformType" class="block text-sm font-medium text-[#2b2d6e] mb-2"><i class="fa-solid fa-shop mr-1"></i>銷售平台手續費</label>
-                         <select id="platformType" onchange="togglePlatformFeeInput(); updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#7c3aed] mb-2 font-medium">
+                 <!-- 平台手續費 (預設為 7-11 賣貨便) -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <label for="platformType" class="block text-sm font-medium text-[#7c3aed] mb-2"><i class="fa-solid fa-shop mr-1"></i>銷售平台手續費</label>
+                            <select id="platformType" onchange="togglePlatformFeeInput(); updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#7c3aed] mb-2 font-medium">
                                 <option value="myship" selected>7-11 賣貨便 (固定 10 元)</option>
                                 <option value="pinkoi">Pinkoi (15% + 15元) × 1.05營業稅</option>
                                 <option value="famistore">全家 好賣+ (固定 10 元)</option>
@@ -231,18 +232,19 @@
                                 <option value="custom_fixed">自訂固定金額 ($)</option>
                             </select>
 
-
-                        <!-- 自訂比例 -->
-                        <div id="customPercentDiv" style="display: flex;" class="items-center mt-1">
-                            <input type="number" id="platformFeePercent" value="5" min="0" max="100" step="0.1" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
-                            <span class="ml-2 text-gray-600 font-medium">%</span>
+                            <div id="customPercentDiv" style="display: none;" class="flex items-center mt-2 print-hidden">
+                                <input type="number" id="customPlatformPercent" value="10" oninput="updateSummary()" class="w-20 px-3 py-2 text-center rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#7c3aed]">
+                                <span class="ml-2 text-gray-600">%</span>
+                            </div>
+                            
+                            <div id="customFixedDiv" style="display: none;" class="flex items-center mt-2 print-hidden">
+                                <span class="mr-2 text-gray-600">$</span>
+                                <input type="number" id="customPlatformFixed" value="35" oninput="updateSummary()" class="w-24 px-3 py-2 text-center rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#7c3aed]">
+                            </div>
                         </div>
-                        
-                        <!-- 自訂固定金額 -->
-                        <div id="customFixedDiv" style="display: none;" class="items-center mt-1">
-                            <span class="mr-2 text-gray-600 font-medium">NT$</span>
-                            <input type="number" id="platformFeeFixed" value="10" min="0" step="1" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
-                        </div>
+                    </div>
+                </div>
+            </div>
 
                         <!-- 平台公式提示 -->
                         <p id="platformNote" style="display: none;" class="text-xs text-[#8b268a] font-medium mt-2 fade-in"></p>
