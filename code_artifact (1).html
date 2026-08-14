@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手作品定價幫手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* 隱藏 Chrome/Safari 數字輸入框的上下箭頭 */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* 列印樣式 (純黑白、單頁、隱藏按鈕、強制清除背景色) */
+        @media print {
+            body { 
+                background: white !important; 
+                -webkit-print-color-adjust: exact; 
+                color-adjust: exact; 
+                filter: grayscale(100%); /* 全面黑白灰階 */
+                padding: 0;
+                color: #000 !important;
+            }
+            .print-hidden { display: none !important; } /* 隱藏編輯刪除按鈕與輸入框 */
+            .shadow-sm, .shadow-lg { box-shadow: none !important; border: 1px solid #000 !important; }
+            
+            /* 強制將原本有色彩或深色背景的卡片改為白底黑框 */
+            .bg-\[\#2b2d6e\], .bg-gray-50, .bg-white {
+                background-color: #fff !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
+            }
+            
+            /* 強制文字顏色在列印時為黑色 */
+            h1, h2, p, span, div, label {
+                color: #000 !important;
+            }
+
+            /* 強制雙欄排版與縮減間距，確保一頁印完 */
+            .print-container { 
+                display: flex !important; 
+                flex-direction: row !important; 
+                gap: 15px !important; 
+            }
+            .print-col { 
+                width: 50% !important; 
+            }
+            .space-y-6 > * + * { margin-top: 12px !important; }
+            .p-6, .p-5 { padding: 10px !important; }
+            .break-inside-avoid { break-inside: avoid; }
+            
+            /* 修正列印時輸入框轉為純文字的上下間距，避免文字重疊 */
+            input[type="text"], input[type="number"], select {
+                border: none !important;
+                background: transparent !important;
+                padding: 2px 0 !important;
+                margin-top: 4px !important;
+                font-weight: bold;
+                color: #000 !important;
+                appearance: none;
+                display: block !important;
+                width: 100% !important;
+            }
+            
+            /* 調整欄位間距 */
+            .grid.grid-cols-2 {
+                display: flex !important;
+                gap: 20px !important;
+            }
+            .grid.grid-cols-2 > div {
+                width: 50% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-gray-800 pb-12">
+
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10 print-hidden">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-[#2b2d6e] rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-[#2b2d6e]">手作品定價幫手</h1>
+                    <p class="text-xs text-gray-500">精準計算成本，找出最佳利潤</p>
+                </div>
+            </div>
+            <button onclick="window.print()" class="hidden md:flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                <i class="fa-solid fa-print mr-2"></i> 列印 / 儲存 PDF
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div class="print-container grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- 左側：輸入表單區塊 -->
+            <div class="print-col lg:col-span-7 space-y-6">
+                
+                <!-- 1. 基本資訊 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fa-solid fa-tag text-[#2b2d6e] mr-2"></i>基本資訊
+                    </h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">飾品名稱</label>
+                        <input type="text" id="productName" placeholder="例如：月光石純銀手鍊" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] focus:border-transparent outline-none transition">
+                    </div>
+                </div>
+
+                <!-- 2. 產品材料費 (無預設材料) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                            <i class="fa-solid fa-gem text-blue-500 mr-2"></i>產品材料費
+                        </h2>
+                        <span class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">總計: $<span id="materialsTotal">0</span></span>
+                    </div>
+                    
+                    <div id="materialsList" class="space-y-3 mb-4">
+                        <!-- JS 渲染材料清單 -->
+                    </div>
+                    
+                    <div class="flex gap-2 print-hidden">
+                        <input type="text" id="newMaterialName" placeholder="材料名稱 (例: 14K金屬線)" class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="number" id="newMaterialCost" placeholder="成本 ($)" class="w-24 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <button onclick="addMaterial()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-medium transition whitespace-nowrap">
+                            <i class="fa-solid fa-plus"></i> 新增
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. 包裝材料費 (保留氣泡紙/防撞墊) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                            <i class="fa-solid fa-box-open text-emerald-500 mr-2"></i>包裝材料費
+                        </h2>
+                        <span class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">總計: $<span id="packagingTotal">0</span></span>
+                    </div>
+                    
+                    <div id="packagingList" class="space-y-3 mb-4">
+                        <!-- JS 渲染包裝清單 -->
+                    </div>
+                    
+                    <div class="flex gap-2 print-hidden">
+                        <input type="text" id="newPackagingName" placeholder="包裝名稱 (例: 精美提袋)" class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="number" id="newPackagingCost" placeholder="成本 ($)" class="w-24 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <button onclick="addPackaging()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg font-medium transition whitespace-nowrap">
+                            <i class="fa-solid fa-plus"></i> 新增
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. 人工成本 & 其他費用 -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fa-solid fa-clock text-amber-500 mr-2"></i>人工與其他費用
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">您的時薪設定 ($/小時)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 print-hidden">$</span>
+                                    <input type="number" id="hourlyRate" value="200" oninput="updateSummary()" class="w-full pl-6 sm:pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 outline-none">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">製作工時 (小時)</label>
+                                <div class="relative">
+                                    <input type="number" id="workHours" value="1.5" step="0.5" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 outline-none">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 print-hidden">hr</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 平台手續費 (預設為 7-11 賣貨便) -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <label for="platformType" class="block text-sm font-medium text-[#2b2d6e] mb-2"><i class="fa-solid fa-shop mr-1"></i>銷售平台手續費</label>
+                            <select id="platformType" onchange="togglePlatformFeeInput(); updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] mb-2 font-medium">
+                                <option value="myship" selected>7-11 賣貨便 (固定 10 元)</option>
+                                <option value="pinkoi">Pinkoi (15% + 15元) × 1.05營業稅</option>
+                                <option value="famistore">全家 好賣+ (固定 10 元)</option>
+                                <option value="custom_percent">自訂比例 (%)</option>
+                                <option value="custom_fixed">自訂固定金額 ($)</option>
+                            </select>
+
+                            <div id="customPercentDiv" style="display: none;" class="flex items-center mt-2 print-hidden">
+                                <input type="number" id="customPlatformPercent" value="10" oninput="updateSummary()" class="w-20 px-3 py-2 text-center rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                                <span class="ml-2 text-gray-600">%</span>
+                            </div>
+                            
+                            <div id="customFixedDiv" style="display: none;" class="flex items-center mt-2 print-hidden">
+                                <span class="mr-2 text-gray-600">$</span>
+                                <input type="number" id="customPlatformFixed" value="35" oninput="updateSummary()" class="w-24 px-3 py-2 text-center rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：總覽與雲端儲存區塊 -->
+            <div class="print-col lg:col-span-5 space-y-6">
+                <!-- 總覽卡片 -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 break-inside-avoid">
+                    <h2 class="text-xl font-bold text-[#2b2d6e] mb-6 border-b pb-4">定價分析總覽</h2>
+                    
+                    <div class="w-full h-48 mb-6 relative">
+                        <canvas id="costChart"></canvas>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span class="text-xs text-gray-500">總成本</span>
+                            <span class="text-xl font-bold text-gray-800" id="displayTotalCost">$0</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-6 text-sm">
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-400 mr-2 print-hidden"></span>材料費</span>
+                            <span class="font-medium">+$<span id="sumMaterials">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-400 mr-2 print-hidden"></span>包裝費</span>
+                            <span class="font-medium">+$<span id="sumPackaging">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-400 mr-2 print-hidden"></span>人工費</span>
+                            <span class="font-medium">+$<span id="sumLabor">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-600">
+                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-indigo-400 mr-2 print-hidden"></span>平台手續費</span>
+                            <span class="font-medium">+$<span id="sumPlatform">0</span></span>
+                        </div>
+                        <div class="pt-3 border-t border-gray-100 flex justify-between items-center font-bold text-gray-800 text-base">
+                            <span>總成本</span>
+                            <span>$<span id="sumTotalCost">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 p-4 rounded-xl mb-6 print-hidden">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-bold text-gray-700">期望利潤率</label>
+                            <span class="text-sm font-bold text-[#2b2d6e]" id="profitMarginDisplay">30%</span>
+                        </div>
+                        <input type="range" id="profitMargin" min="0" max="200" value="30" oninput="updateSummary()" class="w-full accent-[#2b2d6e]">
+                        <p class="text-xs text-gray-500 mt-2">利潤 = 總成本 × 利潤率</p>
+                    </div>
+
+                    <div class="bg-[#2b2d6e] text-white p-5 rounded-xl text-center shadow-md relative overflow-hidden break-inside-avoid">
+                        <div class="absolute -right-4 -top-4 w-16 h-16 bg-white opacity-10 rounded-full print-hidden"></div>
+                        <div class="absolute -left-4 -bottom-4 w-12 h-12 bg-white opacity-10 rounded-full print-hidden"></div>
+                        
+                        <p class="text-sm text-blue-100 mb-1">建議售價</p>
+                        <p class="text-4xl font-bold mb-2">$<span id="suggestedPrice">0</span></p>
+                        <p class="text-sm text-emerald-300 font-medium bg-white/10 inline-block px-3 py-1 rounded-full">
+                            預估淨賺: $<span id="estimatedProfit">0</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 行動按鈕與 Google Sheets 設定 -->
+                <div class="space-y-4 print-hidden mt-6">
+                    
+                    <!-- GAS 教學與程式碼折疊區塊 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <details class="group">
+                            <summary class="flex justify-between items-center font-medium cursor-pointer list-none text-sm text-gray-700 hover:text-[#2b2d6e]">
+                                <span><i class="fa-solid fa-code mr-2 text-indigo-500"></i>Google Apps Script 程式碼 (點此檢視)</span>
+                                <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down"></i></span>
+                            </summary>
+                            <div class="text-xs text-gray-600 mt-3 space-y-2">
+                                <p>請將以下最新版程式碼貼入您的 Google Apps Script：</p>
+                                <div class="bg-gray-50 p-3 rounded border border-gray-200 overflow-x-auto">
+<pre class="text-[11px] text-gray-800 leading-tight select-all">
+function setup() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  sheet.appendRow(["No.1", "2026-08-14", "系統測試", "100", "200", "100"]);
+}
+
+function doPost(e) {
+  try {
+    if (!e || !e.parameter) {
+      return ContentService.createTextOutput("Error: 參數空白");
+    }
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    
+    var sn = "No." + sheet.getLastRow();
+    
+    // 日期格式：僅年月日 (例如 2026-08-14)
+    var date = Utilities.formatDate(new Date(), "Asia/Taipei", "yyyy-MM-dd");
+    
+    var name = e.parameter['飾品名稱'] || '';
+    var cost = e.parameter['總成本'] || '';
+    var price = e.parameter['建議售價'] || '';
+    var profit = e.parameter['預估淨利'] || '';
+    
+    // 依序寫入: 序號(A欄), 日期(B欄), 名稱, 總成本, 建議售價, 預估淨利
+    sheet.appendRow([sn, date, name, cost, price, profit]);
+    
+    return ContentService.createTextOutput("Success");
+  } catch (err) {
+    return ContentService.createTextOutput("Error: " + err.toString());
+  }
+}
+</pre>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- 網址設定與儲存按鈕 -->
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                        <label class="block text-xs font-bold text-gray-700">Google Apps Script 網址 (結尾為 /exec)</label>
+                        <input type="text" id="scriptUrl" placeholder="請貼上結尾為 /exec 的網址" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none">
+                        
+                        <button id="saveBtn" onclick="saveToGoogleSheets()" class="w-full flex items-center justify-center px-4 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-md transition disabled:bg-gray-400">
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> 儲存至 Google Sheets
+                        </button>
+                    </div>
+                    
+                    <button onclick="window.print()" class="md:hidden w-full flex items-center justify-center px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold transition">
+                        <i class="fa-solid fa-print mr-2"></i> 列印 / 儲存 PDF
+                    </button>
+                </div>
+
+                <!-- 隱藏表單：用來解決跨網域 CORS 問題 -->
+                <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(typeof window !== 'undefined' && window.submitted){ onGoogleSheetSubmitComplete(); }"></iframe>
+                <form id="googleSheetForm" method="POST" target="hidden_iframe" class="hidden"></form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 初始化：產品材料費為空，包裝費預設為氣泡紙/防撞墊 (5元)
+        let materials = [];
+        let packaging = [{ id: Date.now(), name: '氣泡紙/防撞墊', cost: 5 }];
+        
+        let costChart = null;
+        const summaryData = { totalCost: 0, suggestedPrice: 0, profit: 0 };
+        window.submitted = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderList('materialsList', materials, 'material');
+            renderList('packagingList', packaging, 'packaging');
+            initChart();
+            updateSummary();
+            
+            const savedUrl = localStorage.getItem('gas_url');
+            if(savedUrl) document.getElementById('scriptUrl').value = savedUrl;
+        });
+
+        function renderList(elementId, items, type) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 italic text-center py-2">尚未加入項目</p>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100';
+                div.innerHTML = `
+                    <span class="font-medium text-gray-700">${item.name}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-medium">$${item.cost}</span>
+                        <button onclick="removeItem('${type}', ${item.id})" class="text-gray-400 hover:text-red-500 transition print-hidden">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addMaterial() {
+            const nameInput = document.getElementById('newMaterialName');
+            const costInput = document.getElementById('newMaterialCost');
+            const name = nameInput.value.trim();
+            const cost = parseFloat(costInput.value);
+
+            if (name && !isNaN(cost) && cost >= 0) {
+                materials.push({ id: Date.now(), name, cost });
+                nameInput.value = '';
+                costInput.value = '';
+                renderList('materialsList', materials, 'material');
+                updateSummary();
+            } else {
+                alert('請輸入正確的名稱與成本！');
+            }
+        }
+
+        function addPackaging() {
+            const nameInput = document.getElementById('newPackagingName');
+            const costInput = document.getElementById('newPackagingCost');
+            const name = nameInput.value.trim();
+            const cost = parseFloat(costInput.value);
+
+            if (name && !isNaN(cost) && cost >= 0) {
+                packaging.push({ id: Date.now(), name, cost });
+                nameInput.value = '';
+                costInput.value = '';
+                renderList('packagingList', packaging, 'packaging');
+                updateSummary();
+            } else {
+                alert('請輸入正確的名稱與成本！');
+            }
+        }
+
+        function removeItem(type, id) {
+            if (type === 'material') {
+                materials = materials.filter(item => item.id !== id);
+                renderList('materialsList', materials, 'material');
+            } else {
+                packaging = packaging.filter(item => item.id !== id);
+                renderList('packagingList', packaging, 'packaging');
+            }
+            updateSummary();
+        }
+
+        function togglePlatformFeeInput() {
+            const type = document.getElementById('platformType').value;
+            document.getElementById('customPercentDiv').style.display = type === 'custom_percent' ? 'flex' : 'none';
+            document.getElementById('customFixedDiv').style.display = type === 'custom_fixed' ? 'flex' : 'none';
+        }
+
+        function calculatePlatformFee(baseCost, expectedPrice) {
+            const type = document.getElementById('platformType').value;
+            if (type === 'myship' || type === 'famistore') return 10;
+            if (type === 'pinkoi') return Math.round((expectedPrice * 0.15 + 15) * 1.05);
+            if (type === 'custom_percent') {
+                const percent = parseFloat(document.getElementById('customPlatformPercent').value) || 0;
+                return Math.round(expectedPrice * (percent / 100));
+            }
+            if (type === 'custom_fixed') return parseFloat(document.getElementById('customPlatformFixed').value) || 0;
+            return 0;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            costChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['材料', '包裝', '人工', '平台手續費'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#60a5fa', '#34d399', '#fbbf24', '#818cf8'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function(context) { return ' ' + context.label + ': $' + context.raw; } } }
+                    }
+                }
+            });
+        }
+
+        function updateSummary() {
+            const totalMaterial = materials.reduce((sum, item) => sum + item.cost, 0);
+            const totalPackaging = packaging.reduce((sum, item) => sum + item.cost, 0);
+            
+            document.getElementById('materialsTotal').innerText = totalMaterial;
+            document.getElementById('sumMaterials').innerText = totalMaterial;
+            document.getElementById('packagingTotal').innerText = totalPackaging;
+            document.getElementById('sumPackaging').innerText = totalPackaging;
+
+            const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 0;
+            const workHours = parseFloat(document.getElementById('workHours').value) || 0;
+            const totalLabor = hourlyRate * workHours;
+            document.getElementById('sumLabor').innerText = totalLabor;
+
+            const marginValue = document.getElementById('profitMargin').value;
+            document.getElementById('profitMarginDisplay').innerText = marginValue + '%';
+
+            let baseCost = totalMaterial + totalPackaging + totalLabor;
+            let profit = Math.round(baseCost * (marginValue / 100));
+            let rawPrice = baseCost + profit;
+            
+            let platformFee = calculatePlatformFee(baseCost, rawPrice);
+            
+            const pType = document.getElementById('platformType').value;
+            if (pType === 'pinkoi') {
+                rawPrice = Math.round((baseCost + profit + 15 * 1.05) / (1 - 0.15 * 1.05));
+                platformFee = rawPrice - baseCost - profit;
+            } else if (pType === 'custom_percent') {
+                const pct = (parseFloat(document.getElementById('customPlatformPercent').value) || 0) / 100;
+                if(pct < 1) { 
+                    rawPrice = Math.round((baseCost + profit) / (1 - pct));
+                    platformFee = rawPrice - baseCost - profit;
+                }
+            } else {
+                rawPrice = baseCost + profit + platformFee;
+            }
+
+            const finalTotalCost = baseCost + platformFee;
+            summaryData.totalCost = finalTotalCost;
+            summaryData.suggestedPrice = rawPrice;
+            summaryData.profit = profit;
+
+            document.getElementById('sumPlatform').innerText = platformFee;
+            document.getElementById('sumTotalCost').innerText = finalTotalCost;
+            document.getElementById('displayTotalCost').innerText = '$' + finalTotalCost;
+            document.getElementById('suggestedPrice').innerText = rawPrice;
+            document.getElementById('estimatedProfit').innerText = profit;
+
+            if (costChart) {
+                costChart.data.datasets[0].data = [totalMaterial, totalPackaging, totalLabor, platformFee];
+                costChart.update();
+            }
+        }
+
+        function saveToGoogleSheets() {
+            const scriptUrl = document.getElementById('scriptUrl').value.trim();
+            if(!scriptUrl || !scriptUrl.endsWith("/exec")) {
+                alert("請填寫正確的 Google Apps Script 網址 (結尾必須是 /exec)");
+                return;
+            }
+            
+            localStorage.setItem('gas_url', scriptUrl);
+            
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> 儲存中...';
+
+            const form = document.getElementById('googleSheetForm');
+            form.action = scriptUrl;
+            form.innerHTML = ''; 
+            
+            const productName = document.getElementById('productName').value || '未命名作品';
+            
+            const postData = {
+                '飾品名稱': productName,
+                '總成本': summaryData.totalCost,
+                '建議售價': summaryData.suggestedPrice,
+                '預估淨利': summaryData.profit
+            };
+
+            for (const key in postData) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = postData[key];
+                form.appendChild(input);
+            }
+
+            window.submitted = true;
+            form.submit();
+        }
+
+        function onGoogleSheetSubmitComplete() {
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> 成功！資料已送出';
+            btn.classList.replace('bg-green-600', 'bg-blue-500');
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up mr-2"></i> 儲存至 Google Sheets';
+                btn.classList.replace('bg-blue-500', 'bg-green-600');
+            }, 3000);
+            
+            window.submitted = false;
+        }
+    </script>
+</body>
+</html>
