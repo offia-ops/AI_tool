@@ -309,11 +309,12 @@
                 <div class="relative mt-2">
                     <textarea readonly class="w-full h-48 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
 function doPost(e) {
-  // 防呆機制：避免在編輯器直接按執行報錯
+  // 1. 防呆機制：如果您在編輯器按「執行」，e 會是 undefined，直接終止不報錯
   if (typeof e === 'undefined') {
-    return ContentService.createTextOutput("請從網頁端點擊按鈕發送資料！");
+    return ContentService.createTextOutput("請不要在這裡點擊執行！請回到定價幫手網頁點擊按鈕。");
   }
   
+  // 2. 正常處理網頁送來的資料
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var rowData = [
@@ -330,9 +331,9 @@ function doPost(e) {
   }
 }
 
-// 加入 doGet，讓您也能用網址直接測試
+// 加入 doGet，讓您也能用網址直接確認 API 存活狀態
 function doGet(e) {
-  return doPost(e);
+  return ContentService.createTextOutput("API 運作中！請回到定價網頁送出資料。");
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
