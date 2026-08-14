@@ -876,32 +876,47 @@ function setup() {
             const suggestedPrice = document.getElementById('suggestedPrice').textContent.replace(/,/g, '');
             const netProfit = document.getElementById('estimatedProfit').textContent.replace(/,/g, '');
 
-            // 改用 URLSearchParams (標準表單格式)，對 Google Sheets 接收的相容性與成功率最高
-            const params = new URLSearchParams();
-            params.append('productName', productName);
-            params.append('totalCost', totalCost);
-            params.append('suggestedPrice', suggestedPrice);
-            params.append('netProfit', netProfit);
+            // 使用「隱藏表單 (Hidden Form)」技術，100% 避開所有瀏覽器 CORS 與 Fetch 阻擋問題
+            const iframeName = 'hidden_iframe_' + Date.now();
+            const iframe = document.createElement('iframe');
+            iframe.name = iframeName;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
 
-            fetch(scriptUrl, {
-                method: 'POST',
-                mode: 'no-cors', // 允許跨網域送出
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: params.toString()
-            })
-            .then(() => {
-                alert('✅ 請求已送出！\n(請至 Google 試算表確認。若仍未出現，請檢查 Apps Script 的「執行項目」紀錄)');
+            const form = document.createElement('form');
+            form.action = scriptUrl;
+            form.method = 'POST';
+            form.target = iframeName;
+            form.style.display = 'none';
+
+            const params = {
+                productName: productName,
+                totalCost: totalCost,
+                suggestedPrice: suggestedPrice,
+                netProfit: netProfit
+            };
+
+            for (let key in params) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = params[key];
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+
+            // 提交表單
+            form.submit();
+
+            // 由於跨網域 iframe 無法準確捕捉 load 事件，設定 1.5 秒後預設完成並還原按鈕
+            setTimeout(() => {
+                alert('✅ 請求已送出！請至 Google 試算表確認資料。\n\n(若仍未出現，請務必確認部署設定的「執行身分」為「您自己」，且「存取權」為「所有人」)');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
-            })
-            .catch(error => {
-                console.error('儲存至 Google Sheets 時發生錯誤:', error);
-                alert('❌ 儲存失敗。請檢查您的網路連線，或確認 Apps Script 權限是否設為「所有人」。');
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            });
+                // 清理 DOM
+                document.body.removeChild(form);
+                setTimeout(() => document.body.removeChild(iframe), 1000);
+            }, 1500);
         }
     </script>
 </body>
