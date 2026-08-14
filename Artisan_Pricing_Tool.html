@@ -406,7 +406,7 @@
                 <h3 class="font-bold text-[#2b2d6e] text-base">🛠️ 5 分鐘快速設定教學</h3>
                 <ol class="list-decimal list-inside space-y-2 text-gray-700">
                     <li>建立一個新的 Google 試算表。</li>
-                    <li>在試算表 A1~E1 欄位分別輸入標題：<code>日期時間</code>、<code>飾品名稱</code>、<code>總成本</code>、<code>建議售價</code>、<code>預估淨利</code>。</li>
+                    <li>在試算表 A1~F1 欄位分別輸入標題：<code>序號</code>、<code>日期時間</code>、<code>飾品名稱</code>、<code>總成本</code>、<code>建議售價</code>、<code>預估淨利</code>。</li>
                     <li>點擊上方選單的 <strong>「擴充功能」 > 「Apps Script」</strong>。</li>
                     <li>清除裡面原有的程式碼，將以下程式碼<strong>複製並貼上</strong>：</li>
                 </ol>
@@ -418,8 +418,14 @@ function doPost(e) {
   try {
     // 改用 getSheets()[0] 強制抓取第一頁，避免背景執行迷路
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
+    var serialNum = sheet.getLastRow(); // 自動抓取最後一行的行號當作序號 (假設第一行是標題)
+    
+    // 取得當天日期 (YYYY-MM-DD 格式，不含時間)
+    var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+    
     sheet.appendRow([
-      new Date(),
+      serialNum,
+      today,
       e.parameter.productName || '未命名飾品',
       e.parameter.totalCost || 0,
       e.parameter.suggestedPrice || 0,
@@ -438,7 +444,9 @@ function doGet(e) {
 // ★ 首次授權專用：請在上方選單選擇此函數並點擊「執行」來觸發權限審查 ★
 function setup() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  sheet.appendRow(["系統測試", "已成功取得權限！", 0, 0, 0]);
+  var serialNum = sheet.getLastRow();
+  var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  sheet.appendRow([serialNum, today, "系統測試", "已成功取得權限！", 0, 0]);
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
