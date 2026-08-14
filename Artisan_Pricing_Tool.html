@@ -875,20 +875,23 @@ function doGet(e) {
             const suggestedPrice = document.getElementById('suggestedPrice').textContent.replace(/,/g, '');
             const netProfit = document.getElementById('estimatedProfit').textContent.replace(/,/g, '');
 
-            // 改用 FormData 格式，對 Google Sheets 接收的相容性最高
-            const formData = new FormData();
-            formData.append('productName', productName);
-            formData.append('totalCost', totalCost);
-            formData.append('suggestedPrice', suggestedPrice);
-            formData.append('netProfit', netProfit);
+            // 改用 URLSearchParams (標準表單格式)，對 Google Sheets 接收的相容性與成功率最高
+            const params = new URLSearchParams();
+            params.append('productName', productName);
+            params.append('totalCost', totalCost);
+            params.append('suggestedPrice', suggestedPrice);
+            params.append('netProfit', netProfit);
 
             fetch(scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors', // 允許跨網域送出
-                body: formData
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params.toString()
             })
             .then(() => {
-                alert('✅ 成功！資料已送出。\n(若未出現在表單，請檢查 Google Apps Script 內的「執行項目」紀錄是否有報錯)');
+                alert('✅ 請求已送出！\n(請至 Google 試算表確認。若仍未出現，請檢查 Apps Script 的「執行項目」紀錄)');
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             })
