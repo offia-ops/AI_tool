@@ -37,9 +37,45 @@
         
         /* 列印專用樣式 */
         @media print {
+            @page {
+                size: A4 portrait; /* 固定為 A4 直式尺寸 */
+                margin: 0.8cm;     /* 縮小邊界，爭取更多內容空間 */
+            }
             body {
                 -webkit-print-color-adjust: exact; /* 確保列印時保留漸層與背景色 */
                 print-color-adjust: exact;
+                background-color: white !important; /* 背景改白，節省墨水且版面更乾淨 */
+                padding: 0 !important;
+                display: block !important; /* 取消 body 的 flex 置中，避免跑版 */
+            }
+            /* 滿版呈現，移除陰影 */
+            .max-w-4xl {
+                max-width: 100% !important;
+                box-shadow: none !important;
+            }
+            /* 強制列印時保持左右雙欄排版，不折行 */
+            .flex-col.md\:flex-row {
+                flex-direction: row !important;
+                gap: 1.5rem !important;
+            }
+            /* 重新分配左右欄寬度比例，完美塞進一頁 */
+            .flex-1 { 
+                flex: 0 0 60% !important; 
+                max-width: 60% !important;
+            }
+            .md\:w-1\/3 { 
+                flex: 0 0 38% !important; 
+                max-width: 38% !important;
+                width: 38% !important; 
+            }
+            /* 縮小區塊內距與間距，極致壓縮空間以符合一頁 */
+            .p-6 { padding: 1rem !important; }
+            .p-8 { padding: 1.5rem !important; }
+            .space-y-8 > * + * { margin-top: 1rem !important; }
+            section { 
+                padding: 1rem !important; 
+                break-inside: avoid; /* 避免單一區塊被切成兩半 */
+                page-break-inside: avoid;
             }
             /* 讓輸入框在列印時隱藏邊框，看起來更像純文字報表 */
             input[type="text"], input[type="number"], select {
@@ -49,6 +85,18 @@
                 -webkit-appearance: none;
                 -moz-appearance: none;
                 appearance: none;
+                padding: 0 !important;
+                height: auto !important;
+                color: #1f2937 !important; /* 確保文字夠深 */
+            }
+            /* 隱藏右側表單的範圍拉桿 (range) */
+            input[type="range"] {
+                display: none !important;
+            }
+            /* 縮小右側大字體，防止撐破版面 */
+            .text-\[48px\] {
+                font-size: 36px !important;
+                line-height: 1 !important;
             }
         }
     </style>
