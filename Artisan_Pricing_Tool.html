@@ -34,6 +34,23 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8; 
         }
+        
+        /* 列印專用樣式 */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact; /* 確保列印時保留漸層與背景色 */
+                print-color-adjust: exact;
+            }
+            /* 讓輸入框在列印時隱藏邊框，看起來更像純文字報表 */
+            input[type="text"], input[type="number"], select {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+            }
+        }
     </style>
 </head>
 <body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen">
@@ -66,11 +83,11 @@
                         <span class="text-sm font-normal text-gray-500">小計: NT$<span id="materialTotal" class="font-bold text-[#8b268a]">0</span></span>
                     </h2>
                     
-                    <div id="materialList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
+                    <div id="materialList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 print:max-h-none print:overflow-visible print:pr-0">
                         <!-- 材料項目將透過 JS 動態產生在這裡 -->
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 print:hidden">
                         <input type="text" id="newMaterialName" placeholder="材料名稱" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <input type="number" id="newMaterialCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <button onclick="addMaterial('material')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
@@ -85,11 +102,11 @@
                         <span class="text-sm font-normal text-gray-500">小計: NT$<span id="packagingTotal" class="font-bold text-[#8b268a]">0</span></span>
                     </h2>
                     
-                    <div id="packagingList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
+                    <div id="packagingList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 print:max-h-none print:overflow-visible print:pr-0">
                         <!-- 包裝項目將透過 JS 動態產生在這裡 -->
                     </div>
 
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 print:hidden">
                         <input type="text" id="newPackagingName" placeholder="包裝名稱 (如: 絨布袋)" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <input type="number" id="newPackagingCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <button onclick="addMaterial('packaging')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
@@ -419,12 +436,14 @@ function doGet(e) {
                         <div class="flex-grow font-medium text-gray-700">${item.name}</div>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-900 font-semibold mr-2">$${item.cost}</span>
-                            <button onclick="startEdit('${type}', '${item.id}')" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1.5" title="編輯">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button onclick="removeItem('${type}', '${item.id}')" class="text-red-400 hover:text-red-600 transition-colors p-1.5" title="刪除">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
+                            <div class="flex gap-1 print:hidden">
+                                <button onclick="startEdit('${type}', '${item.id}')" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1.5" title="編輯">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="removeItem('${type}', '${item.id}')" class="text-red-400 hover:text-red-600 transition-colors p-1.5" title="刪除">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
