@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -142,10 +141,7 @@
         }
     </style>
 </head>
-<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen relative">
-
-    <!-- 全局提示框容器 (Toast) 代替原生的 alert -->
-    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+<body class="text-gray-800 p-4 md:p-8 flex justify-center min-h-screen">
 
     <div class="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
         <!-- 頂部標題 -->
@@ -180,7 +176,7 @@
                     </div>
 
                     <div class="flex gap-2 print:hidden">
-                        <input type="text" id="newMaterialName" placeholder="材料名稱" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm w-full">
+                        <input type="text" id="newMaterialName" placeholder="材料名稱" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <input type="number" id="newMaterialCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <button onclick="addMaterial('material')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
                             <i class="fa-solid fa-plus mr-1"></i> 新增
@@ -199,7 +195,7 @@
                     </div>
 
                     <div class="flex gap-2 print:hidden">
-                        <input type="text" id="newPackagingName" placeholder="包裝名稱 (如: 絨布袋)" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm w-full">
+                        <input type="text" id="newPackagingName" placeholder="包裝名稱 (如: 絨布袋)" class="flex-2 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <input type="number" id="newPackagingCost" placeholder="成本 ($)" min="0" step="1" class="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] text-sm">
                         <button onclick="addMaterial('packaging')" class="bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 text-[#2b2d6e] border border-indigo-200 px-4 py-2 rounded-lg transition-all font-medium whitespace-nowrap shadow-sm">
                             <i class="fa-solid fa-plus mr-1"></i> 新增
@@ -230,13 +226,13 @@
                         <select id="platformType" onchange="togglePlatformFeeInput(); updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e] mb-2 font-medium">
                             <option value="custom_percent">自訂比例 (%)</option>
                             <option value="pinkoi">Pinkoi (15% + 15元) × 1.05營業稅</option>
-                            <option value="myship" selected>7-11 賣貨便 (固定 10 元)</option>
+                            <option value="myship">7-11 賣貨便 (固定 10 元)</option>
                             <option value="famistore">全家 好賣+ (固定 10 元)</option>
                             <option value="custom_fixed">自訂固定金額 ($)</option>
                         </select>
 
                         <!-- 自訂比例 -->
-                        <div id="customPercentDiv" style="display: none;" class="items-center mt-1">
+                        <div id="customPercentDiv" style="display: flex;" class="items-center mt-1">
                             <input type="number" id="platformFeePercent" value="5" min="0" max="100" step="0.1" oninput="updateSummary()" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#2b2d6e]">
                             <span class="ml-2 text-gray-600 font-medium">%</span>
                         </div>
@@ -377,7 +373,7 @@
                     </div>
                     
                     <div class="mt-6 space-y-3 print:hidden">
-                        <button onclick="saveToGoogleSheet()" id="saveBtn" class="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md flex items-center justify-center relative">
+                        <button onclick="saveToGoogleSheet()" id="btnSaveSheet" class="w-full bg-[#10b981] hover:bg-[#059669] text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-md flex items-center justify-center">
                             <i class="fa-brands fa-google mr-2"></i> 儲存至 Google Sheets
                         </button>
                         <button onclick="window.print()" class="w-full bg-white/10 hover:bg-white/20 text-white border border-white/30 font-bold py-3 px-4 rounded-xl transition-colors shadow-md flex items-center justify-center">
@@ -416,7 +412,7 @@
                 </ol>
                 
                 <div class="relative mt-2">
-                    <textarea readonly class="w-full h-64 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none cursor-text" onclick="this.select()">
+                    <textarea readonly class="w-full h-64 p-3 bg-gray-800 text-green-400 font-mono text-xs rounded-lg shadow-inner outline-none resize-none" onclick="this.select()">
 function doPost(e) {
   if (typeof e === 'undefined' || !e.parameter) return ContentService.createTextOutput("請從網頁送出資料");
   try {
@@ -474,11 +470,11 @@ function setup() {
     </div>
 
     <script>
-        // --- 狀態管理 ---
+        // 資料狀態
         const state = {
             materials: [
                 { id: generateId(), name: '線材', cost: 50 },
-            ],
+                           ],
             packaging: [
                 { id: generateId(), name: '氣泡紙/防撞墊', cost: 5 }
             ],
@@ -491,39 +487,10 @@ function setup() {
             return Math.random().toString(36).substr(2, 9);
         }
 
-        // 實作浮動提示系統取代原生 Alert
-        function showToast(message, type = 'error') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            
-            // 根據提示類型設定顏色
-            let bgColor = 'bg-red-500';
-            let icon = 'fa-circle-exclamation';
-            if (type === 'success') {
-                bgColor = 'bg-emerald-500';
-                icon = 'fa-check-circle';
-            } else if (type === 'warning') {
-                bgColor = 'bg-amber-500';
-                icon = 'fa-triangle-exclamation';
-            }
-
-            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg fade-in text-sm font-medium flex items-center pointer-events-auto transition-opacity duration-300`;
-            toast.innerHTML = `<i class="fa-solid ${icon} mr-2"></i> ${message}`;
-            
-            container.appendChild(toast);
-            
-            // 3秒後淡出刪除
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
         // 初始化應用程式
         function init() {
             renderList('material');
             renderList('packaging');
-            togglePlatformFeeInput();
             calculateLaborCost();
         }
 
@@ -562,8 +529,8 @@ function setup() {
                     `;
                 } else {
                     itemEl.innerHTML = `
-                        <div class="flex-grow font-medium text-gray-700 truncate mr-2" title="${item.name}">${item.name}</div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="flex-grow font-medium text-gray-700">${item.name}</div>
+                        <div class="flex items-center gap-2">
                             <span class="text-gray-900 font-semibold mr-2">$${item.cost}</span>
                             <div class="flex gap-1 print:hidden">
                                 <button onclick="startEdit('${type}', '${item.id}')" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1.5" title="編輯">
@@ -603,12 +570,12 @@ function setup() {
             const newCost = parseFloat(costInput.value);
 
             if (!newName) {
-                showToast('請輸入名稱！', 'warning');
+                alert('請輸入名稱！');
                 nameInput.focus();
                 return;
             }
             if (isNaN(newCost) || newCost < 0) {
-                showToast('請輸入有效的成本金額！', 'warning');
+                alert('請輸入有效的成本金額！');
                 costInput.focus();
                 return;
             }
@@ -634,12 +601,12 @@ function setup() {
             const cost = parseFloat(costInput.value);
 
             if (!name) {
-                showToast('請輸入名稱！', 'warning');
+                alert('請輸入名稱！');
                 nameInput.focus();
                 return;
             }
             if (isNaN(cost) || cost < 0) {
-                showToast('請輸入有效的成本金額！', 'warning');
+                alert('請輸入有效的成本金額！');
                 costInput.focus();
                 return;
             }
@@ -727,7 +694,6 @@ function setup() {
             }
         }
 
-        // 核心更新統整與計算
         function updateSummary() {
             const materialTotal = state.materials.reduce((sum, item) => sum + item.cost, 0);
             const packagingTotal = state.packaging.reduce((sum, item) => sum + item.cost, 0);
@@ -880,7 +846,6 @@ function setup() {
             }
         };
 
-        // 切換 Google Sheets 設定視窗
         function toggleSheetSettings() {
             const modal = document.getElementById('sheetSettingsModal');
             if (modal.classList.contains('hidden')) {
@@ -892,31 +857,26 @@ function setup() {
             }
         }
 
-        // 儲存 Google Sheets 設定
         function saveSheetSettings() {
             const url = document.getElementById('scriptUrl').value.trim();
             localStorage.setItem('googleSheetScriptUrl', url);
             toggleSheetSettings();
-            showToast('Google Sheets 網址設定已儲存！', 'success');
+            alert('Google Sheets 網址設定已儲存！');
         }
 
-        // 儲存至 Google Sheets (無中斷式提示版本)
         function saveToGoogleSheet() {
             const scriptUrl = document.getElementById('scriptUrl').value.trim();
             
-            // 如果沒有設定網址，直接彈出設定視窗，並用 Toast 提示
             if (!scriptUrl || !scriptUrl.startsWith('https://script.google.com/')) {
-                showToast('請先完成連線設定', 'warning');
+                alert('請先點擊下方的「Google Sheets 連線設定教學」輸入正確的 Apps Script 網址。');
                 toggleSheetSettings();
                 return;
             }
 
-            // 修改按鈕狀態，顯示 Loading 動畫
-            const btn = document.getElementById('saveBtn');
+            const btn = document.getElementById('btnSaveSheet');
             const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> 寫入資料中...';
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> 儲存中...';
-            btn.classList.add('opacity-80', 'cursor-not-allowed');
 
             const productName = document.getElementById('productName').value || '未命名飾品';
             const totalCost = (state.materials.reduce((s, i) => s + i.cost, 0) + state.packaging.reduce((s, i) => s + i.cost, 0) + state.labor);
@@ -955,24 +915,11 @@ function setup() {
             // 提交表單
             form.submit();
 
-            // 1.5 秒後判定為完成，並使用按鈕文字做成功回饋，不跳 alert 視窗
+            // 由於跨網域 iframe 無法準確捕捉 load 事件，設定 1.5 秒後預設完成並還原按鈕
             setTimeout(() => {
-                // 顯示成功狀態
-                btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> 已儲存';
-                btn.classList.remove('bg-[#10b981]', 'hover:bg-[#059669]', 'opacity-80', 'cursor-not-allowed');
-                btn.classList.add('bg-emerald-600');
-                
-                // 也可以額外加一個底部 Toast 輔助
-                showToast('已成功寫入 Google 試算表！', 'success');
-                
-                // 再等 2 秒後，將按鈕還原回原本的狀態
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
-                    btn.classList.add('bg-[#10b981]', 'hover:bg-[#059669]');
-                    btn.classList.remove('bg-emerald-600');
-                }, 2000);
-
+                alert('✅ 請求已送出！請至 Google 試算表確認資料。');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
                 // 清理 DOM
                 document.body.removeChild(form);
                 setTimeout(() => document.body.removeChild(iframe), 1000);
