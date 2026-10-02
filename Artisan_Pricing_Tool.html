@@ -428,7 +428,7 @@ function doPost(e) {
     var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
     
     // 將序號排在第一個欄位
-    sheet.appendRow([
+      sheet.appendRow([
       serialNum,
       today,
       e.parameter.productName || '未命名飾品',
