@@ -429,7 +429,7 @@ function doPost(e) {
     
     // 將序號排在第一個欄位
     sheet.appendRow([
-      "No." + serialNum,
+      serialNum,
       today,
       e.parameter.productName || '未命名飾品',
       e.parameter.totalCost || 0,
