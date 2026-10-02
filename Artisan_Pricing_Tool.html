@@ -420,16 +420,31 @@
 function doPost(e) {
   if (typeof e === 'undefined' || !e.parameter) return ContentService.createTextOutput("請從網頁送出資料");
   try {
-    // 改用 getSheets()[0] 強制抓取第一頁，避免背景執行迷路
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; 
-    var serialNum = sheet.getLastRow(); // 自動抓取最後一行的行號當作序號 (假設第一行是標題)
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var lastRow = sheet.getLastRow();
     
-    // 取得當天日期 (YYYY-MM-DD 格式，不含時間)
+    // 取得當天日期
     var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+    var datePrefix = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd"); // 年月日格式，如 20231024
     
-    // 將序號排在第一個欄位
-      "No." + sheet.appendRow([
-      serialNum,
+    // 計算流水號 (檢查上一行的序號是否為今日，是則+1，否則從 1 開始)
+    var newSeq = 1;
+    if (lastRow > 1) {
+      var lastSerial = sheet.getRange(lastRow, 1).getValue().toString();
+      if (lastSerial.indexOf(datePrefix) === 0) {
+        var lastSeq = parseInt(lastSerial.substring(8), 10);
+        if (!isNaN(lastSeq)) {
+          newSeq = lastSeq + 1;
+        }
+      }
+    }
+    // 組合最終流水號：日期 + 3位數字 (例如：20231024001)
+    var seqStr = ("000" + newSeq).slice(-3);
+    var finalSerial = datePrefix + seqStr;
+    
+    // 寫入資料
+    sheet.appendRow([
+      finalSerial,
       today,
       e.parameter.productName || '未命名飾品',
       e.parameter.totalCost || 0,
@@ -449,9 +464,10 @@ function doGet(e) {
 // ★ 首次授權專用：請在上方選單選擇此函數並點擊「執行」來觸發權限審查 ★
 function setup() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  var serialNum = sheet.getLastRow();
   var today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
-  sheet.appendRow(["No." + serialNum, today, "系統測試", "已成功取得權限！", 0, 0]);
+  var datePrefix = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd");
+  var finalSerial = datePrefix + "001";
+  sheet.appendRow([finalSerial, today, "系統測試", "已成功取得權限！", 0, 0]);
 }</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">※ 點擊框內即可全選複製</p>
                 </div>
